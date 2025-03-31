@@ -1,6 +1,8 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, BookOpen, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import UserProfile from './UserProfile';
 
 export default function SideBar() {
   const pathname = usePathname();
@@ -11,9 +13,11 @@ export default function SideBar() {
       : pathname.replace('/', '');
   const router = useRouter();
   return (
-    <div className="w-64 bg-white border-r shrink-0">
+    <div className="w-64 bg-white border-r shrink-0 flex flex-col justify-between">
       <div className="p-6">
-        <h1 className="text-xl font-bold">Dreaming Library</h1>
+        <Link href={'/'} className="text-xl font-bold">
+          Dreaming Library
+        </Link>
       </div>
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-1 h-auto p-0">
@@ -48,6 +52,9 @@ export default function SideBar() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+      <div className="mt-auto border-t p-4">
+        <UserProfile />
+      </div>
     </div>
   );
 }
