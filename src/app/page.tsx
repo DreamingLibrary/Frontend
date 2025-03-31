@@ -126,11 +126,13 @@ export default function HomePage() {
               <Input placeholder="암호를 입력하세요" type="password" />
               <Button
                 onClick={() => {
-                  alert(`${selectedGroup.name}에 입장합니다!`);
+                  alert(
+                    `${selectedGroup.name}의 관리자의 승인을 기다려주세요!`
+                  );
                   setIsModalOpen(false);
                 }}
               >
-                입장하기
+                입장신청
               </Button>
             </DialogFooter>
           </DialogContent>

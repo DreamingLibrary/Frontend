@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+// import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';
 
 // 로그인 폼 스키마
@@ -85,6 +85,9 @@ export default function SignPage() {
     console.log(values);
     // 여기에 로그인 로직 구현
     alert('로그인 시도: ' + JSON.stringify(values));
+    // TODO: API 받아서 넣기
+    localStorage.setItem('name', '송은수');
+    localStorage.setItem('studentId', values.studentId);
     router.push('/');
   }
 
@@ -162,7 +165,7 @@ export default function SignPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center space-x-2 my-4">
+                  {/* <div className="flex items-center space-x-2 my-4">
                     <Checkbox id="remember" />
                     <label
                       htmlFor="remember"
@@ -170,7 +173,8 @@ export default function SignPage() {
                     >
                       로그인 상태 유지
                     </label>
-                  </div>
+                  </div> */}
+                  <div className="p-1"></div>
                   <Button type="submit" className="w-full">
                     로그인
                   </Button>
