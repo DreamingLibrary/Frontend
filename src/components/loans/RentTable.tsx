@@ -115,7 +115,7 @@ export default function RentTable() {
               <TableHead>상태</TableHead>
               <TableHead>연장 횟수</TableHead>
               <TableHead>대출일</TableHead>
-              <TableHead>액션</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
