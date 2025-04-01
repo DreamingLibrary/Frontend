@@ -86,7 +86,7 @@ export default function SignPage() {
     // 여기에 로그인 로직 구현
     alert('로그인 시도: ' + JSON.stringify(values));
     // TODO: API 받아서 넣기
-    localStorage.setItem('name', '송은수');
+    localStorage.setItem('name', '000');
     localStorage.setItem('studentId', values.studentId);
     router.push('/');
   }
@@ -96,6 +96,8 @@ export default function SignPage() {
     console.log(values);
     // 여기에 회원가입 로직 구현
     alert('회원가입 시도: ' + JSON.stringify(values));
+    localStorage.setItem('name', '000');
+    localStorage.setItem('studentId', values.studentId);
     router.push('/');
   }
 
