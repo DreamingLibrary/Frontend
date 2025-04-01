@@ -30,8 +30,15 @@ export default function UserProfile() {
   // 로그아웃 처리
   const handleLogout = () => {
     // 실제로는 로그아웃 API 호출 등의 처리
+    window.localStorage.clear();
     router.push('/login');
   };
+
+  useEffect(() => {
+    if (localStorage.getItem('studentId') === null) {
+      router.push('/login');
+    }
+  }, []);
 
   return (
     <>
