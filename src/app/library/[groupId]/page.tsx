@@ -4,9 +4,19 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, LoaderCircle } from 'lucide-react';
+import { Search, LoaderCircle, SquarePlus } from 'lucide-react';
 import BookTable from '@/components/library/BookTable';
 import SideBar from '@/components/all/SideBar';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { useForm } from 'react-hook-form';
 
 // 그룹 데이터 인터페이스
 interface Group {
@@ -39,12 +49,22 @@ const groups: Record<string, Group> = {
   },
 };
 
+// 폼 데이터 타입 정의
+interface BookFormData {
+  title: string;
+  author: string;
+  category: string;
+  description?: string;
+}
+
 export default function LibraryPage() {
   const params = useParams();
   const groupId = params.groupId as string;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [group, setGroup] = useState<Group | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { register, handleSubmit, reset } = useForm<BookFormData>();
 
   // 그룹 정보 가져오기
   useEffect(() => {
@@ -53,6 +73,14 @@ export default function LibraryPage() {
       setGroup(groups[groupId]);
     }
   }, [groupId]);
+
+  const onSubmit = (data: BookFormData) => {
+    // 여기서 데이터 처리
+    console.log(data);
+    alert(`${group?.name}에 책이 등록되었습니다! 도서명: ${data.title}`);
+    reset(); // 폼 초기화
+    setIsModalOpen(false);
+  };
 
   if (!group) {
     return (
@@ -71,9 +99,23 @@ export default function LibraryPage() {
       <div className="flex-1 p-8 overflow-auto">
         <Tabs defaultValue="books" className="w-full">
           <TabsContent value="books" className="mt-0">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{group.name}</h2>
-              <p className="text-muted-foreground">{group.description}</p>
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">{group.name}</h2>
+                <p className="text-muted-foreground">{group.description}</p>
+              </div>
+              <div className="flex flex-col items-center hover:cursor-pointer hover:bg-gray-200">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <SquarePlus className="h-3 w-3 mr-1" />책 등록하기
+                </Button>
+              </div>
             </div>
 
             {/* 검색 및 필터링 */}
@@ -170,6 +212,38 @@ export default function LibraryPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* 책 등록 모달 */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>책 등록하기</DialogTitle>
+            <DialogDescription>새로운 책 등록</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <Input
+              {...register('title', { required: true })}
+              type="text"
+              placeholder="도서명"
+            />
+            <Input
+              {...register('author', { required: true })}
+              type="text"
+              placeholder="저자"
+            />
+            <Input
+              {...register('category', { required: true })}
+              type="text"
+              placeholder="카테고리"
+            />
+            <Textarea
+              {...register('description')}
+              placeholder="설명을 입력해주세요(선택)"
+            />
+            <Button type="submit">등록</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
