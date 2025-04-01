@@ -113,7 +113,7 @@ export default function UserSettings() {
 
   // 역할에 따른 배지 색상
   const getRoleBadgeVariant = (role: USER) => {
-    return role === 'ADMIN' ? 'primary' : 'secondary';
+    return role === 'ADMIN' ? 'default' : 'secondary';
   };
 
   // 역할에 따른 한글 표시
@@ -293,7 +293,7 @@ export default function UserSettings() {
             <DialogTitle>비밀번호 변경</DialogTitle>
             <DialogDescription>새로운 비밀번호를 입력하세요.</DialogDescription>
           </DialogHeader>
-          <form className="space-y-4 py-4" >
+          <form className="space-y-4 py-4">
             <div className="space-y-2">
               <div>새 비밀번호</div>
               <Input
