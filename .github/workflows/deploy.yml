@@ -1,31 +1,31 @@
-name: git push into another repo to deploy to vercel
+name: git push into another repo to deploy to vercel # Vercel 배포를 위한 다른 저장소 푸시 워크플로우
 
-on:
+on: # 트리거
   push:
-    branches: [dev]
-  workflow_dispatch:
+    branches: [dev] # dev 브랜치에 push될 때 실행
+  workflow_dispatch: # 수동 실행 가능
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    container: pandoc/latex
+  build: # 빌드 작업
+    runs-on: ubuntu-latest # Ubuntu 최신 버전에서 실행
+    container: pandoc/latex # LaTeX 컨테이너 사용
     steps:
-      - uses: actions/checkout@v2
-      - name: Install mustache (to update the date)
+      - uses: actions/checkout@v2 # 코드 체크아웃
+      - name: Install mustache (to update the date) # 날짜 업데이트를 위한 mustache 설치
         run: apk add ruby && gem install mustache
-      - name: creates output
+      - name: creates output # 빌드 스크립트 실행
         run: sh ./build.sh
-      - name: Pushes to another repository
+      - name: Pushes to another repository # 다른 저장소로 푸시
         id: push_directory
-        uses: cpina/github-action-push-to-another-repository@main
+        uses: cpina/github-action-push-to-another-repository@main # 다른 저장소 푸시 액션 사용
         env:
-          API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }}
+          API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }} # GitHub API 토큰
         with:
-          source-directory: 'output'
-          destination-github-username: songess
-          destination-repository-name: DL_client
-          user-email: ${{ secrets.EMAIL }}
-          commit-message: ${{ github.event.commits[0].message }}
-          target-branch: main
-      - name: Test get variable exported by push-to-another-repository
+          source-directory: 'output' # 푸시할 소스 디렉토리
+          destination-github-username: songess # 대상 GitHub 사용자명
+          destination-repository-name: DL_client # 대상 저장소 이름
+          user-email: ${{ secrets.EMAIL }} # 커밋에 사용할 이메일
+          commit-message: ${{ github.event.commits[0].message }} # 원본 커밋 메시지 사용
+          target-branch: main # 대상 브랜치
+      - name: Test get variable exported by push-to-another-repository # 푸시 후 변수 테스트
         run: echo $DESTINATION_CLONED_DIRECTORY
