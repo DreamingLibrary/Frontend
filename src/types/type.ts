@@ -1,4 +1,4 @@
-type GROUPSTATUS = 'NONE' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
+export type GROUPSTATUS = 'NONE' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
 type GROUPNAME = 'CNU' | 'PARROT' | 'GDGoC' | 'RELEASE';
 type USER = 'ADMIN' | 'USER';
 
@@ -15,6 +15,7 @@ export interface User {
   role: USER;
   phoneNumber: string;
   email?: string;
+  status: GROUPSTATUS;
 }
 
 export interface Group {
@@ -48,4 +49,24 @@ export interface LoginResponse {
   phoneNumber: string;
   role: USER;
   studentNumber: string;
+}
+
+interface ResponseTemplate {
+  code: number;
+  message: string;
+  success: boolean;
+}
+
+export interface Book {
+  bookId: number;
+  title: string;
+  author: string;
+  description?: string;
+  category: string;
+  groupId: number;
+}
+
+export interface BookResponse extends ResponseTemplate {
+  // 책 조회
+  result: Book[];
 }
