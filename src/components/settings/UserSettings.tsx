@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -33,26 +33,20 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Edit, User, Phone, Mail, BookMarked, Webhook } from 'lucide-react';
+import { fetchUserInfo } from '@/app/api/apis';
+import { LoginResponse } from '@/types/type';
 
 // 사용자 역할 타입
 type USER = 'ADMIN' | 'USER';
 
-// 사용자 정보 인터페이스
-interface UserInfo {
-  name: string;
-  studentNumber: number;
-  role: USER;
-  phoneNumber: string;
-  email?: string;
-}
-
 // 샘플 사용자 데이터
-const sampleUser: UserInfo = {
+const sampleUser: LoginResponse = {
   name: '송은수',
-  studentNumber: 20201593,
+  studentNumber: '20201593',
   role: 'ADMIN',
   phoneNumber: '010-1234-5678',
   email: 'songess@naver.com',
+  id: 1,
 };
 
 // 폼 스키마
@@ -72,7 +66,7 @@ const formSchema = z.object({
 
 export default function UserSettings() {
   // TODO: API 연결
-  const [user, setUser] = useState<UserInfo>(sampleUser);
+  const [user, setUser] = useState<LoginResponse>(sampleUser);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [password, setPassword] = useState<string>('');
@@ -83,7 +77,7 @@ export default function UserSettings() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name,
-      studentNumber: user.studentNumber,
+      studentNumber: Number(user.studentNumber),
       phoneNumber: user.phoneNumber,
       email: user.email || '',
     },
@@ -95,7 +89,7 @@ export default function UserSettings() {
     setUser({
       ...user,
       name: values.name,
-      studentNumber: values.studentNumber,
+      studentNumber: values.studentNumber.toString(),
       phoneNumber: values.phoneNumber,
       email: values.email,
     });
@@ -120,6 +114,14 @@ export default function UserSettings() {
   const getRoleDisplay = (role: USER) => {
     return role === 'ADMIN' ? '관리자' : '일반 사용자';
   };
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const response = await fetchUserInfo();
+      setUser(response);
+    };
+    getUserInfo();
+  }, []);
 
   return (
     <>

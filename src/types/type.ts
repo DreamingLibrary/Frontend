@@ -40,3 +40,12 @@ export interface Rent {
   rentalCount: number; // 연장횟수
   createdAt: Date;
 }
+
+export interface LoginResponse {
+  email?: string;
+  id: number;
+  name: string;
+  phoneNumber: string;
+  role: USER;
+  studentNumber: string;
+}

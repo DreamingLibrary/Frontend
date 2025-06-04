@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/card';
 // import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';
+import { fetchLogin, fetchSignUp } from '../api/apis';
 
 // 로그인 폼 스키마
 const loginFormSchema = z.object({
@@ -81,23 +82,26 @@ export default function SignPage() {
   });
 
   // 로그인 제출 핸들러
-  function onLoginSubmit(values: z.infer<typeof loginFormSchema>) {
-    console.log(values);
-    // 여기에 로그인 로직 구현
-    alert('로그인 시도: ' + JSON.stringify(values));
-    // TODO: API 받아서 넣기
-    localStorage.setItem('name', '000');
-    localStorage.setItem('studentId', values.studentId);
+  async function onLoginSubmit(values: z.infer<typeof loginFormSchema>) {
+    const response = await fetchLogin(values.studentId, values.password);
+    localStorage.setItem('name', response.name);
+    localStorage.setItem('studentId', response.studentNumber);
     router.push('/');
   }
 
   // 회원가입 제출 핸들러
-  function onRegisterSubmit(values: z.infer<typeof registerFormSchema>) {
-    console.log(values);
-    // 여기에 회원가입 로직 구현
-    alert('회원가입 시도: ' + JSON.stringify(values));
-    localStorage.setItem('name', '000');
-    localStorage.setItem('studentId', values.studentId);
+  async function onRegisterSubmit(
+    values: z.infer<typeof registerFormSchema>
+  ) {
+    const response = await fetchSignUp(
+      values.studentId,
+      values.password,
+      values.name,
+      values.phoneNumber,
+      values.email
+    );
+    localStorage.setItem('name', response.name);
+    localStorage.setItem('studentId', response.studentNumber);
     router.push('/');
   }
 
