@@ -33,7 +33,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Edit, User, Phone, Mail, BookMarked, Webhook } from 'lucide-react';
-import { fetchUserInfo } from '@/app/api/apis';
+import { fetchUserInfo, updatePassword, updateUserInfo } from '@/app/api/apis';
 import { LoginResponse } from '@/types/type';
 
 // 사용자 역할 타입
@@ -52,10 +52,6 @@ const sampleUser: LoginResponse = {
 // 폼 스키마
 const formSchema = z.object({
   name: z.string().min(1, { message: '이름을 입력해주세요' }),
-  studentNumber: z.coerce
-    .number()
-    .int()
-    .positive({ message: '유효한 학번을 입력해주세요' }),
   phoneNumber: z.string().min(1, { message: '전화번호를 입력해주세요' }),
   email: z
     .string()
@@ -65,7 +61,6 @@ const formSchema = z.object({
 });
 
 export default function UserSettings() {
-  // TODO: API 연결
   const [user, setUser] = useState<LoginResponse>(sampleUser);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -77,31 +72,43 @@ export default function UserSettings() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name,
-      studentNumber: Number(user.studentNumber),
       phoneNumber: user.phoneNumber,
       email: user.email || '',
     },
   });
 
   // 정보 수정 제출 핸들러
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: API 연결
-    setUser({
-      ...user,
-      name: values.name,
-      studentNumber: values.studentNumber.toString(),
-      phoneNumber: values.phoneNumber,
-      email: values.email,
-    });
-    setIsEditModalOpen(false);
-    console.log(form.getValues());
-    alert('사용자 정보가 업데이트되었습니다.');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await updateUserInfo({
+        name: values.name,
+        studentNumber: user.studentNumber,
+        phoneNumber: values.phoneNumber,
+        email: values.email,
+      });
+      setUser({
+        ...user,
+        name: values.name,
+        phoneNumber: values.phoneNumber,
+        email: values.email,
+      });
+      setIsEditModalOpen(false);
+      alert('사용자 정보가 업데이트되었습니다.');
+    } catch (error) {
+      console.error(error);
+      alert('사용자 정보 수정에 실패했습니다.');
+    }
   }
 
   // 비밀번호 수정 핸들러
-  function onPasswordSubmit() {
-    // TODO: API 연결
-    alert(`비밀번호가 변경되었습니다.${password}, ${passwordCheck}`);
+  async function onPasswordSubmit() {
+    try {
+      await updatePassword(password);
+      alert(`비밀번호가 변경되었습니다.${password}, ${passwordCheck}`);
+    } catch (error) {
+      console.error(error);
+      alert('비밀번호 변경에 실패했습니다.');
+    }
     setIsPasswordModalOpen(false);
   }
 
@@ -222,27 +229,12 @@ export default function UserSettings() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="studentNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>학번</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <div className="space-y-1">
-                <FormLabel>역할</FormLabel>
+                <FormLabel>학번</FormLabel>
                 <div className="flex items-center h-10 px-3 rounded-md border bg-muted/50">
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {getRoleDisplay(user.role)}
-                  </Badge>
+                  <div className="font-medium">{user.studentNumber}</div>
                   <FormDescription className="ml-2 text-xs">
-                    역할은 변경할 수 없습니다.
+                    학번은 변경할 수 없습니다.
                   </FormDescription>
                 </div>
               </div>

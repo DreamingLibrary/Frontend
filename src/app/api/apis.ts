@@ -74,3 +74,38 @@ export const fetchUserInfo = async (): Promise<LoginResponse> => {
   );
   return response.json();
 };
+
+export const updateUserInfo = async ({
+  name,
+  studentNumber,
+  phoneNumber,
+  email,
+}: {
+  name: string;
+  studentNumber: string;
+  phoneNumber: string;
+  email?: string;
+}) => {
+  await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/user/info`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, studentNumber, phoneNumber, email }),
+    }
+  );
+};
+export const updatePassword = async (password: string) => {
+  await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/user/pwd`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    }
+  );
+};
