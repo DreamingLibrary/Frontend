@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -15,20 +15,23 @@ import { Group, UserGroup } from '@/types/type';
 import { Input } from '@/components/ui/input';
 import SideBar from '@/components/all/SideBar';
 import { useRouter } from 'next/navigation';
+import { fetchGroupApply, fetchGroupList } from './api/apis';
 
-const groups: UserGroup[] = [
-  { groupId: 1, name: 'CNU_none', status: 'NONE' },
-  { groupId: 2, name: 'RELEASE_accepted', status: 'ACCEPTED' },
-  { groupId: 3, name: 'GDG on Campus_rejected', status: 'REJECTED' },
-  { groupId: 4, name: 'Parrot_pending', status: 'PENDING' },
-];
+// const groups: UserGroup[] = [
+//   { groupId: 1, name: 'CNU_none', status: 'NONE' },
+//   { groupId: 2, name: 'RELEASE_approved', status: 'APPROVED' },
+//   { groupId: 3, name: 'GDG on Campus_rejected', status: 'REJECTED' },
+//   { groupId: 4, name: 'Parrot_pending', status: 'PENDING' },
+// ];
 
 export default function HomePage() {
+  const [groups, setGroups] = useState<UserGroup[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group>({
     groupId: 0,
     name: '',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const openGroupModal = (group: Group) => {
     setSelectedGroup(group);
@@ -36,6 +39,25 @@ export default function HomePage() {
   };
 
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      const response = await fetchGroupList();
+      setGroups(response.result);
+      console.log(response.result);
+    };
+    fetchGroups();
+  }, [refreshTrigger]);
+
+  const handleSubmit = async (groupId: number) => {
+    const response = await fetchGroupApply(groupId);
+    if (response.success) {
+      alert('그룹 입장 신청이 완료되었습니다.');
+      setRefreshTrigger((prev) => prev + 1);
+    } else {
+      alert('그룹 입장 신청에 실패했습니다.');
+    }
+  };
 
   return (
     <main className="flex h-screen bg-gray-50">
@@ -62,7 +84,7 @@ export default function HomePage() {
                   </CardFooter>
                 </Card>
               );
-            else if (group.status === 'ACCEPTED')
+            else if (group.status === 'APPROVED')
               return (
                 <Card key={group.groupId} className="overflow-hidden">
                   <CardHeader className="pb-3">
@@ -126,9 +148,7 @@ export default function HomePage() {
               <Input placeholder="암호를 입력하세요" type="password" />
               <Button
                 onClick={() => {
-                  alert(
-                    `${selectedGroup.name}의 관리자의 승인을 기다려주세요!`
-                  );
+                  handleSubmit(selectedGroup.groupId);
                   setIsModalOpen(false);
                 }}
               >

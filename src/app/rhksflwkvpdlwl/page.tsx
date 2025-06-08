@@ -31,7 +31,7 @@ export default function AdminPage() {
 
   const handleUserApproval = async (
     userId: number,
-    action: 'ACCEPTED' | 'REJECTED'
+    action: 'APPROVED' | 'REJECTED'
   ) => {
     try {
       const response = await fetch(`/api/users/${userId}/approval`, {
@@ -48,7 +48,7 @@ export default function AdminPage() {
             user.userId === userId ? { ...user, status: action } : user
           )
         );
-        alert(`사용자가 ${action === 'ACCEPTED' ? '승인' : '거절'}되었습니다.`);
+        alert(`사용자가 ${action === 'APPROVED' ? '승인' : '거절'}되었습니다.`);
       } else {
         alert('작업 처리 중 오류가 발생했습니다.');
       }
@@ -93,10 +93,10 @@ export default function AdminPage() {
                 <span className="text-gray-800">{user.name}</span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleUserApproval(user.userId, 'ACCEPTED')}
-                    disabled={user.status === 'ACCEPTED'}
+                    onClick={() => handleUserApproval(user.userId, 'APPROVED')}
+                    disabled={user.status === 'APPROVED'}
                     className={`px-4 py-2 rounded-md text-white transition-colors ${
-                      user.status === 'ACCEPTED'
+                      user.status === 'APPROVED'
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-green-600 hover:bg-green-700'
                     }`}

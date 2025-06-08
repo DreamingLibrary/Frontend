@@ -1,4 +1,4 @@
-import { LoginResponse } from '@/types/type';
+import { GroupListResponse, LoginResponse } from '@/types/type';
 
 export const fetchLogin = async (
   studentId: string,
@@ -97,6 +97,7 @@ export const updateUserInfo = async ({
     }
   );
 };
+
 export const updatePassword = async (password: string) => {
   await fetchWithAuth(
     `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/user/pwd`,
@@ -108,4 +109,27 @@ export const updatePassword = async (password: string) => {
       body: JSON.stringify({ password }),
     }
   );
+};
+
+export const fetchGroupList = async (): Promise<GroupListResponse> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/groups`,
+    {
+      method: 'GET',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupApply = async (
+  groupId: number
+): Promise<GroupListResponse> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/request-join?groupId=${groupId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  return response.json();
 };
