@@ -1,23 +1,18 @@
 'use client';
 
 import { User } from '@/types/type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { fetchCreateGroup, fetchGroupUserApproval, fetchGroupUserListPENDING } from '../api/apis';
 
 export default function AdminPage() {
   const [groupName, setGroupName] = useState('');
   const [users, setUsers] = useState<User[]>([]);
 
-  const handleCreateGroup = async () => {
+  const handleCreateGroup = async (groupName: string) => {
     try {
-      const response = await fetch('/api/groups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ groupName }),
-      });
+      const response = await fetchCreateGroup(groupName);
 
-      if (response.ok) {
+      if (response.success) {
         alert('그룹이 생성되었습니다.');
         setGroupName('');
       } else {
@@ -34,13 +29,7 @@ export default function AdminPage() {
     action: 'APPROVED' | 'REJECTED'
   ) => {
     try {
-      const response = await fetch(`/api/users/${userId}/approval`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action }),
-      });
+      const response = await fetchGroupUserApproval(userId, action, 1);
 
       if (response.ok) {
         setUsers(
@@ -58,6 +47,15 @@ export default function AdminPage() {
     }
   };
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await fetchGroupUserListPENDING(1, 'PENDING');
+      console.log(response);
+      setUsers(response.result);
+    };
+    fetchUsers();
+  }, []);
+
   return (
     <div className="min-h-screen w-full bg-gray-100 flex flex-col items-center justify-center">
       <div className="min-w-4xl mx-auto p-8">
@@ -74,7 +72,7 @@ export default function AdminPage() {
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
-              onClick={handleCreateGroup}
+              onClick={() => handleCreateGroup(groupName)}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               그룹 생성
@@ -90,7 +88,7 @@ export default function AdminPage() {
                 key={user.userId}
                 className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0"
               >
-                <span className="text-gray-800">{user.name}</span>
+                <span className="text-gray-800">{user.studentNumber}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleUserApproval(user.userId, 'APPROVED')}

@@ -74,3 +74,8 @@ export interface BookResponse extends ResponseTemplate {
 export interface GroupListResponse extends ResponseTemplate {
   result: UserGroup[];
 }
+
+export interface GroupUserPENDINGListResponse extends ResponseTemplate {
+  result: User[];
+}
+

@@ -125,7 +125,7 @@ export default function HomePage() {
                       className="w-full"
                       onClick={() => openGroupModal(group)}
                     >
-                      입장하기
+                      입장신청
                     </Button>
                   </CardFooter>
                 </Card>

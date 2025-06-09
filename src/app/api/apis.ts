@@ -1,4 +1,8 @@
-import { GroupListResponse, LoginResponse } from '@/types/type';
+import {
+  GroupListResponse,
+  GroupUserPENDINGListResponse,
+  LoginResponse,
+} from '@/types/type';
 
 export const fetchLogin = async (
   studentId: string,
@@ -128,6 +132,56 @@ export const fetchGroupApply = async (
     `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/request-join?groupId=${groupId}`,
     {
       method: 'POST',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchCreateGroup = async (
+  groupName: string
+): Promise<GroupListResponse> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/groups`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ groupName }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupUserListPENDING = async (
+  groupId: number,
+  status: string
+): Promise<GroupUserPENDINGListResponse> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/list-join-requests?groupId=${groupId}&status=${status}`,
+    {
+      method: 'GET',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupUserApproval = async (
+  userId: number,
+  action: 'APPROVED' | 'REJECTED',
+  groupId: number
+) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/approve-or-reject`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ userId, status: action, groupId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
     }
   );
