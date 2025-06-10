@@ -4,6 +4,7 @@ import {
   GroupListResponse,
   GroupUserPENDINGListResponse,
   LoginResponse,
+  MyLentsResponse,
 } from '@/types/type';
 
 export const fetchLogin = async (
@@ -275,6 +276,17 @@ export const fetchBookLent = async (bookId: number) => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchMyLents = async (): Promise<MyLentsResponse[]> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/rents/my`,
+    {
+      method: 'GET',
       credentials: 'include',
     }
   );

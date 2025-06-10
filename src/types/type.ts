@@ -92,3 +92,13 @@ export interface BookRegisterRequest {
   category: string;
   groupId: number;
 }
+
+export interface MyLentsResponse {
+  rentId: number;
+  userName: string;
+  bookTitle: string;
+  rentalStartAt: Date;
+  createdAt: Date;
+  returnAt: Date;
+  isOverdue: boolean;
+}

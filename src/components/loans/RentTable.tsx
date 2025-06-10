@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -22,42 +22,15 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
-import { Rent } from '@/types/type';
+import { Rent, MyLentsResponse } from '@/types/type';
+import { fetchMyLents } from '@/app/api/apis';
 
-// 샘플 데이터
-const sampleRents: Rent[] = [
-  {
-    rentId: 1001,
-    title: '해리 포터와 마법사의 돌',
-    groupName: 'CNU',
-    returnAt: new Date(2025, 3, 1),
-    rentalPeriod: 14,
-    rentalCount: 0,
-    createdAt: new Date(2025, 3, 1),
-  },
-  {
-    rentId: 1002,
-    title: '1984',
-    groupName: 'PARROT',
-    returnAt: new Date(2025, 2, 10),
-    rentalPeriod: 14,
-    rentalCount: 1,
-    createdAt: new Date(2025, 2, 27),
-  },
-  {
-    rentId: 1003,
-    title: '클린 코드: 애자일 소프트웨어 장인 정신',
-    groupName: 'GDGoC',
-    returnAt: new Date(2025, 3, 5),
-    rentalPeriod: 7,
-    rentalCount: 2,
-    createdAt: new Date(2025, 2, 22),
-  },
-];
+type GROUPNAME = 'CNU' | 'PARROT' | 'GDGoC' | 'RELEASE';
 
 export default function RentTable() {
   const [selectedRent, setSelectedRent] = useState<Rent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rents, setRents] = useState<Rent[]>([]);
 
   // 대출 연장 처리 함수
   const handleExtend = (rent: Rent) => {
@@ -103,6 +76,27 @@ export default function RentTable() {
     }
   };
 
+  useEffect(() => {
+    const fetchMyLentsCall = async () => {
+      try {
+        const response = (await fetchMyLents()) as MyLentsResponse[];
+        const formattedRents: Rent[] = response.map((rent) => ({
+          rentId: rent.rentId,
+          title: rent.bookTitle,
+          groupName: rent.userName as GROUPNAME,
+          returnAt: new Date(rent.returnAt),
+          rentalPeriod: 14, // 기본값 설정
+          rentalCount: 0, // 기본값 설정
+          createdAt: new Date(rent.createdAt),
+        }));
+        setRents(formattedRents);
+      } catch (error) {
+        console.error('대출 목록 조회 중 오류 발생:', error);
+      }
+    };
+    fetchMyLentsCall();
+  }, []);
+
   return (
     <>
       <div className="rounded-md border bg-white">
@@ -119,8 +113,8 @@ export default function RentTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sampleRents.length > 0 ? (
-              sampleRents.map((rent) => {
+            {rents.length > 0 ? (
+              rents.map((rent) => {
                 const status = getReturnStatus(rent.returnAt);
                 return (
                   <TableRow key={rent.rentId}>
