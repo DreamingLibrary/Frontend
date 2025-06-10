@@ -1,5 +1,6 @@
 import {
   BookListResponse,
+  BookRegisterRequest,
   GroupListResponse,
   GroupUserPENDINGListResponse,
   LoginResponse,
@@ -238,6 +239,27 @@ export const fetchGroupDelete = async (groupId: number) => {
     `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/groups/${groupId}`,
     {
       method: 'DELETE',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchBookRegister = async ({
+  title,
+  author,
+  description,
+  category,
+  groupId,
+}: BookRegisterRequest) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/books`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ title, author, description, category, groupId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
     }
   );

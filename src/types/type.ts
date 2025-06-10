@@ -84,3 +84,11 @@ export interface BookListResponse extends ResponseTemplate {
     list: Book[];
   };
 }
+
+export interface BookRegisterRequest {
+  title: string;
+  author: string;
+  description?: string;
+  category: string;
+  groupId: number;
+}

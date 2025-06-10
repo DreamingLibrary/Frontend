@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
+import { fetchBookRegister, fetchGroupList } from '@/app/api/apis';
+import { UserGroup } from '@/types/type';
 
 // 그룹 데이터 인터페이스
 interface Group {
@@ -49,6 +51,20 @@ const groups: Record<string, Group> = {
   },
 };
 
+// 카테고리 enum
+enum Category {
+  WEB_DEVELOPMENT = '웹 개발',
+  MOBILE_DEVELOPMENT = '모바일 개발',
+  DEVOPS = 'DevOps',
+  DATABASE = '데이터베이스',
+  SECURITY = '보안',
+  GAME_DEVELOPMENT = '게임 개발',
+  COMPUTER_SCIENCE = '컴퓨터 과학',
+  ALGORITHMS = '알고리즘',
+  TESTING = '테스팅',
+  UI_UX_DESIGN = 'UI/UX 디자인',
+}
+
 // 폼 데이터 타입 정의
 interface BookFormData {
   title: string;
@@ -62,24 +78,42 @@ export default function LibraryPage() {
   const groupId = params.groupId as string;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [group, setGroup] = useState<Group | null>(null);
+  const [group, setGroup] = useState<UserGroup | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { register, handleSubmit, reset } = useForm<BookFormData>();
 
   // 그룹 정보 가져오기
   useEffect(() => {
-    // 실제로는 API 호출을 통해 그룹 정보를 가져옴
-    if (groupId && groups[groupId]) {
-      setGroup(groups[groupId]);
-    }
+    const fetchGroup = async () => {
+      const response = await fetchGroupList();
+      setGroup(
+        response.result.find((g) => g.groupId === Number.parseInt(groupId)) ||
+          null
+      );
+    };
+    fetchGroup();
   }, [groupId]);
 
-  const onSubmit = (data: BookFormData) => {
-    // 여기서 데이터 처리
-    console.log(data);
-    alert(`${group?.name}에 책이 등록되었습니다! 도서명: ${data.title}`);
-    reset(); // 폼 초기화
-    setIsModalOpen(false);
+  const onSubmit = async (data: BookFormData) => {
+    try {
+      const response = await fetchBookRegister({
+        title: data.title,
+        author: data.author,
+        description: data.description,
+        category: data.category,
+        groupId: Number.parseInt(groupId),
+      });
+      if (response.success) {
+        alert(`${group?.name}에 책이 등록되었습니다! 도서명: ${data.title}`);
+        reset(); // 폼 초기화
+        setIsModalOpen(false);
+        setRefreshKey((prev) => prev + 1); // 목록 새로고침을 위한 키 업데이트
+      }
+    } catch (error) {
+      console.error('책 등록 중 오류 발생:', error);
+      alert('책 등록 중 오류가 발생했습니다.');
+    }
   };
 
   if (!group) {
@@ -102,7 +136,6 @@ export default function LibraryPage() {
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">{group.name}</h2>
-                <p className="text-muted-foreground">{group.description}</p>
               </div>
               <div className="flex flex-col items-center hover:cursor-pointer hover:bg-gray-200">
                 <Button
@@ -145,16 +178,64 @@ export default function LibraryPage() {
                       전체
                     </TabsTrigger>
                     <TabsTrigger
-                      value="전공"
+                      value="WEB_DEVELOPMENT"
                       className="data-[state=active]:bg-gray-200"
                     >
-                      전공
+                      웹 개발
                     </TabsTrigger>
                     <TabsTrigger
-                      value="일반"
+                      value="MOBILE_DEVELOPMENT"
                       className="data-[state=active]:bg-gray-200"
                     >
-                      일반
+                      모바일 개발
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="DEVOPS"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      DevOps
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="DATABASE"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      데이터베이스
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="SECURITY"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      보안
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="GAME_DEVELOPMENT"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      게임 개발
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="COMPUTER_SCIENCE"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      컴퓨터 과학
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="ALGORITHMS"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      알고리즘
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="TESTING"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      테스팅
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="UI_UX_DESIGN"
+                      className="data-[state=active]:bg-gray-200"
+                    >
+                      UI/UX 디자인
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -163,6 +244,7 @@ export default function LibraryPage() {
 
             {/* 도서 목록 테이블 */}
             <BookTable
+              key={refreshKey}
               searchQuery={searchQuery}
               categoryFilter={
                 selectedCategory === 'all' ? null : selectedCategory
@@ -215,7 +297,10 @@ export default function LibraryPage() {
 
       {/* 책 등록 모달 */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent
+          className="sm:max-w-[425px]"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>책 등록하기</DialogTitle>
             <DialogDescription>새로운 책 등록</DialogDescription>
@@ -231,11 +316,17 @@ export default function LibraryPage() {
               type="text"
               placeholder="저자"
             />
-            <Input
+            <select
               {...register('category', { required: true })}
-              type="text"
-              placeholder="카테고리"
-            />
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="">카테고리 선택</option>
+              {Object.entries(Category).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value}
+                </option>
+              ))}
+            </select>
             <Textarea
               {...register('description')}
               placeholder="설명을 입력해주세요(선택)"
