@@ -28,22 +28,9 @@ export default function AdminPage({
     action: 'APPROVED' | 'REJECTED'
   ) => {
     try {
-      const response = await fetchGroupUserApproval(
-        userId,
-        action,
-        parseInt(groupId)
-      );
-
-      if (response.ok) {
-        setUsers(
-          users.map((user) =>
-            user.userId === userId ? { ...user, status: action } : user
-          )
-        );
-        alert(`사용자가 ${action === 'APPROVED' ? '승인' : '거절'}되었습니다.`);
-      } else {
-        alert('작업 처리 중 오류가 발생했습니다.');
-      }
+      await fetchGroupUserApproval(userId, action, parseInt(groupId));
+      setUsers(users.filter((user) => user.userId !== userId));
+      alert(`사용자가 ${action === 'APPROVED' ? '승인' : '거절'}되었습니다.`);
     } catch (error) {
       console.error('사용자 승인 처리 중 오류 발생:', error);
       alert('작업 처리 중 오류가 발생했습니다.');

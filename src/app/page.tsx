@@ -12,10 +12,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Group, UserGroup } from '@/types/type';
-import { Input } from '@/components/ui/input';
 import SideBar from '@/components/all/SideBar';
 import { useRouter } from 'next/navigation';
 import { fetchGroupApply, fetchGroupList } from './api/apis';
+import { useAuth } from '@/hooks/useAuth';
 
 // const groups: UserGroup[] = [
 //   { groupId: 1, name: 'CNU_none', status: 'NONE' },
@@ -25,6 +25,7 @@ import { fetchGroupApply, fetchGroupList } from './api/apis';
 // ];
 
 export default function HomePage() {
+  const { isLoading } = useAuth();
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group>({
     groupId: 0,
@@ -58,6 +59,10 @@ export default function HomePage() {
       alert('그룹 입장 신청에 실패했습니다.');
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="flex h-screen bg-gray-50">
@@ -122,8 +127,8 @@ export default function HomePage() {
                   </CardHeader>
                   <CardFooter>
                     <Button
-                      className="w-full"
                       onClick={() => openGroupModal(group)}
+                      className="bg-gray-700 w-full"
                     >
                       입장신청
                     </Button>
@@ -141,11 +146,10 @@ export default function HomePage() {
             <DialogHeader>
               <DialogTitle>{selectedGroup.name}</DialogTitle>
               <DialogDescription>
-                그룹에 입장하기 위해선 암호를 입력해야 합니다.
+                입장하기 위해선 관리자의 승인이 필요합니다.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
-              <Input placeholder="암호를 입력하세요" type="password" />
               <Button
                 onClick={() => {
                   handleSubmit(selectedGroup.groupId);
