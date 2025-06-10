@@ -2,34 +2,37 @@
 
 import { User } from '@/types/type';
 import { useEffect, useState } from 'react';
-import { fetchCreateGroup, fetchGroupUserApproval, fetchGroupUserListPENDING } from '../api/apis';
+import {
+  fetchGroupUserApproval,
+  fetchGroupUserListPENDING,
+} from '../../api/apis';
 
-export default function AdminPage() {
-  const [groupName, setGroupName] = useState('');
+export default function AdminPage({
+  params,
+}: {
+  params: Promise<{ groupId: string }>;
+}) {
   const [users, setUsers] = useState<User[]>([]);
+  const [groupId, setGroupId] = useState<string>('');
 
-  const handleCreateGroup = async (groupName: string) => {
-    try {
-      const response = await fetchCreateGroup(groupName);
-
-      if (response.success) {
-        alert('그룹이 생성되었습니다.');
-        setGroupName('');
-      } else {
-        alert('그룹 생성에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('그룹 생성 중 오류 발생:', error);
-      alert('그룹 생성 중 오류가 발생했습니다.');
-    }
-  };
+  useEffect(() => {
+    const init = async () => {
+      const resolvedParams = await params;
+      setGroupId(resolvedParams.groupId);
+    };
+    init();
+  }, [params]);
 
   const handleUserApproval = async (
     userId: number,
     action: 'APPROVED' | 'REJECTED'
   ) => {
     try {
-      const response = await fetchGroupUserApproval(userId, action, 1);
+      const response = await fetchGroupUserApproval(
+        userId,
+        action,
+        parseInt(groupId)
+      );
 
       if (response.ok) {
         setUsers(
@@ -49,36 +52,18 @@ export default function AdminPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await fetchGroupUserListPENDING(1, 'PENDING');
+      if (!groupId) return;
+      const response = await fetchGroupUserListPENDING(groupId, 'PENDING');
       console.log(response);
       setUsers(response.result);
     };
     fetchUsers();
-  }, []);
+  }, [groupId]);
 
   return (
     <div className="min-h-screen w-full bg-gray-100 flex flex-col items-center justify-center">
       <div className="min-w-4xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-8">관리자 페이지</h1>
-
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">그룹 생성</h2>
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="그룹 이름을 입력하세요"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={() => handleCreateGroup(groupName)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              그룹 생성
-            </button>
-          </div>
-        </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">사용자 승인 관리</h2>

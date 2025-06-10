@@ -79,3 +79,8 @@ export interface GroupUserPENDINGListResponse extends ResponseTemplate {
   result: User[];
 }
 
+export interface BookListResponse extends ResponseTemplate {
+  result: {
+    list: Book[];
+  };
+}

@@ -1,4 +1,5 @@
 import {
+  BookListResponse,
   GroupListResponse,
   GroupUserPENDINGListResponse,
   LoginResponse,
@@ -156,7 +157,7 @@ export const fetchCreateGroup = async (
 };
 
 export const fetchGroupUserListPENDING = async (
-  groupId: number,
+  groupId: string,
   status: string
 ): Promise<GroupUserPENDINGListResponse> => {
   const response = await fetchWithAuth(
@@ -182,6 +183,61 @@ export const fetchGroupUserApproval = async (
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchBookList = async (): Promise<BookListResponse> => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/books`,
+    {
+      method: 'GET',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupAdminPromotion = async (groupId: number) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/set-admin?groupId=${groupId}`,
+    {
+      method: 'POST',
+      // body: JSON.stringify({ userId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupNameChange = async (
+  groupId: number,
+  newName: string
+) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/groups/${groupId}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ groupName: newName }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchGroupDelete = async (groupId: number) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/groups/${groupId}`,
+    {
+      method: 'DELETE',
       credentials: 'include',
     }
   );
