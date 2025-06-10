@@ -21,35 +21,6 @@ import { fetchBookRegister, fetchGroupList } from '@/app/api/apis';
 import { UserGroup } from '@/types/type';
 
 // 그룹 데이터 인터페이스
-interface Group {
-  id: number;
-  name: string;
-  description: string;
-}
-
-// 샘플 그룹 데이터
-const groups: Record<string, Group> = {
-  '1': {
-    id: 1,
-    name: 'CNU',
-    description: '공지사항 ~~~ 주의하세요 ~~~',
-  },
-  '2': {
-    id: 2,
-    name: 'RELEASE',
-    description: '공지사항 ~~~ 주의하세요 ~~~',
-  },
-  '3': {
-    id: 3,
-    name: 'GDGoC',
-    description: '공지사항 ~~~ 주의하세요 ~~~',
-  },
-  '4': {
-    id: 4,
-    name: 'PARROT',
-    description: '공지사항 ~~~ 주의하세요 ~~~',
-  },
-};
 
 // 카테고리 enum
 enum Category {
