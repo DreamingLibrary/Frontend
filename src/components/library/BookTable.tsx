@@ -22,6 +22,20 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, BookOpen } from 'lucide-react';
 import { fetchBookList } from '@/app/api/apis';
 
+// 카테고리 enum
+enum Category {
+  WEB_DEVELOPMENT = '웹 개발',
+  MOBILE_DEVELOPMENT = '모바일 개발',
+  DEVOPS = 'DevOps',
+  DATABASE = '데이터베이스',
+  SECURITY = '보안',
+  GAME_DEVELOPMENT = '게임 개발',
+  COMPUTER_SCIENCE = '컴퓨터 과학',
+  ALGORITHMS = '알고리즘',
+  TESTING = '테스팅',
+  UI_UX_DESIGN = 'UI/UX 디자인',
+}
+
 // 책 인터페이스
 export interface Book {
   bookId: number;
@@ -105,19 +119,38 @@ export default function BookTable({
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
 
   useEffect(() => {
     const fetchBooks = async () => {
       const response = await fetchBookList();
-      // setBooks(response.result);
-      setFilteredBooks(
-        response.result.list.filter((book) => book.groupId === groupId)
+      const groupBooks = response.result.list.filter(
+        (book) => book.groupId === groupId
       );
+      setBooks(groupBooks);
+      setFilteredBooks(groupBooks);
     };
     fetchBooks();
   }, [groupId]);
+
+  // 검색어와 카테고리 필터링
+  useEffect(() => {
+    const filtered = books.filter((book) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory =
+        categoryFilter === null ||
+        categoryFilter === 'all' ||
+        book.category === categoryFilter;
+
+      return matchesSearch && matchesCategory;
+    });
+    setFilteredBooks(filtered);
+  }, [searchQuery, categoryFilter, books]);
 
   // 행 확장 토글
   const toggleRowExpansion = (bookId: number) => {
@@ -142,19 +175,6 @@ export default function BookTable({
     alert(`"${selectedBook?.title}" 도서가 대출되었습니다.`);
     setIsModalOpen(false);
   };
-
-  // 검색 및 필터링된 도서 목록
-  // const filteredBooks = filteredBooks.filter((book) => {
-  //   const matchesSearch =
-  //     searchQuery === '' ||
-  //     book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     book.author.toLowerCase().includes(searchQuery.toLowerCase());
-
-  //   const matchesCategory =
-  //     categoryFilter === null || book.category === categoryFilter;
-
-  //   return matchesSearch && matchesCategory;
-  // });
 
   return (
     <>
@@ -188,12 +208,9 @@ export default function BookTable({
                     <TableCell className="font-medium">{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          book.category === '전공' ? 'default' : 'secondary'
-                        }
-                      >
-                        {book.category}
+                      <Badge variant="secondary">
+                        {Category[book.category as keyof typeof Category] ||
+                          book.category}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -259,12 +276,9 @@ export default function BookTable({
 
                 <div className="font-medium">카테고리</div>
                 <div className="col-span-2">
-                  <Badge
-                    variant={
-                      selectedBook.category === '전공' ? 'default' : 'secondary'
-                    }
-                  >
-                    {selectedBook.category}
+                  <Badge variant="secondary">
+                    {Category[selectedBook.category as keyof typeof Category] ||
+                      selectedBook.category}
                   </Badge>
                 </div>
 
