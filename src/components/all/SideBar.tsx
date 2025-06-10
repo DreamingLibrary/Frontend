@@ -6,7 +6,6 @@ import UserProfile from './UserProfile';
 
 export default function SideBar() {
   const pathname = usePathname();
-  console.log(pathname);
   const defaultTab =
     pathname === '/' || pathname.startsWith('/library')
       ? 'my-groups'

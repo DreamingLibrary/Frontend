@@ -107,8 +107,6 @@ export default function BookTable({
   const [isModalOpen, setIsModalOpen] = useState(false);
   // const [books, setBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  console.log(filteredBooks.length);
-  console.log(filteredBooks);
 
   useEffect(() => {
     const fetchBooks = async () => {
