@@ -265,3 +265,18 @@ export const fetchBookRegister = async ({
   );
   return response.json();
 };
+
+export const fetchBookLent = async (bookId: number) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/rents`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ bookId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};

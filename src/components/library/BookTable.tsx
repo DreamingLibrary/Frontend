@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, BookOpen } from 'lucide-react';
-import { fetchBookList } from '@/app/api/apis';
+import { fetchBookLent, fetchBookList } from '@/app/api/apis';
 
 // 카테고리 enum
 enum Category {
@@ -170,10 +170,23 @@ export default function BookTable({
   };
 
   // 대출 처리
-  const handleBorrow = () => {
-    // TODO: API 연결
-    alert(`"${selectedBook?.title}" 도서가 대출되었습니다.`);
-    setIsModalOpen(false);
+  const handleBorrow = async () => {
+    try {
+      await fetchBookLent(selectedBook?.bookId || 0);
+      alert(`"${selectedBook?.title}" 도서가 대출되었습니다.`);
+      setIsModalOpen(false);
+
+      // 도서 목록 새로고침
+      const updatedBooks = await fetchBookList();
+      const groupBooks = updatedBooks.result.list.filter(
+        (book) => book.groupId === groupId
+      );
+      setBooks(groupBooks);
+      setFilteredBooks(groupBooks);
+    } catch (error) {
+      console.error('대출 중 오류 발생:', error);
+      alert('대출에 실패했습니다.');
+    }
   };
 
   return (
