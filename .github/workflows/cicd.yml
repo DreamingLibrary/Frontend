@@ -19,10 +19,13 @@ jobs: # 실행할 작업 정의
           port: ${{ secrets.REMOTE_SSH_PORT }} # SSH 포트 (기본 22)
           script: | # 실행할 명령어들
             cd /home/ubuntu/Frontend  # 프로젝트 디렉토리로 이동
-            git pull origin main  # 최신 코드 가져오기
+            git fetch origin
+            git reset --hard origin/dev
             pm2 kill  # 실행 중인 프로세스 종료
             npm i --force  # 의존성 설치
             export NEXT_PUBLIC_LOGROCKET_ID=${{ secrets.NEXT_PUBLIC_LOGROCKET_ID }}
             export NEXT_PUBLIC_VERCEL_ENV=${{ secrets.NEXT_PUBLIC_VERCEL_ENV }}
+            echo "LogRocket ID: $NEXT_PUBLIC_LOGROCKET_ID"
+            echo "Environment: $NEXT_PUBLIC_VERCEL_ENV"
             npm run build  # 프로젝트 빌드
             pm2 start npm --name "frontend" -- start  # Next.js 서버 시작
