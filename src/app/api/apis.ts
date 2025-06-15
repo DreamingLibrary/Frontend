@@ -57,6 +57,10 @@ export const fetchSignUp = async (
       credentials: 'include',
     }
   );
+  const token = response.headers.get('Authorization');
+  if (token) {
+    localStorage.setItem('token', token);
+  }
   return response.json();
 };
 
@@ -202,12 +206,14 @@ export const fetchBookList = async (): Promise<BookListResponse> => {
   return response.json();
 };
 
-export const fetchGroupAdminPromotion = async (groupId: number) => {
+export const fetchGroupAdminPromotion = async (
+  groupId: number,
+  userId: number
+) => {
   const response = await fetchWithAuth(
-    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/set-admin?groupId=${groupId}`,
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/group-user/set-admin?groupId=${groupId}&userId=${userId}`,
     {
       method: 'POST',
-      // body: JSON.stringify({ userId }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -287,6 +293,28 @@ export const fetchMyLents = async (): Promise<MyLentsResponse[]> => {
     `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/rents/my`,
     {
       method: 'GET',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchBookExtend = async (rentId: number) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/rents/extend/${rentId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  return response.json();
+};
+
+export const fetchBookReturn = async (rentId: number) => {
+  const response = await fetchWithAuth(
+    `${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/rents/${rentId}`,
+    {
+      method: 'DELETE',
       credentials: 'include',
     }
   );

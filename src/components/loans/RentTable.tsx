@@ -21,22 +21,58 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Rent, MyLentsResponse } from '@/types/type';
-import { fetchMyLents } from '@/app/api/apis';
+import { fetchBookExtend, fetchBookReturn, fetchMyLents } from '@/app/api/apis';
 
 type GROUPNAME = 'CNU' | 'PARROT' | 'GDGoC' | 'RELEASE';
 
 export default function RentTable() {
   const [selectedRent, setSelectedRent] = useState<Rent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [rents, setRents] = useState<Rent[]>([]);
+  const [rents, setRents] = useState<Rent[] | null>(null);
+
+  const fetchMyLentsCall = async () => {
+    try {
+      const response = (await fetchMyLents()) as MyLentsResponse[];
+      const formattedRents: Rent[] = response.map((rent) => ({
+        rentId: rent.rentId,
+        title: rent.bookTitle,
+        groupName: rent.userName as GROUPNAME,
+        returnAt: new Date(rent.returnAt),
+        rentalPeriod: 14,
+        createdAt: new Date(rent.createdAt),
+      }));
+      setRents(formattedRents);
+    } catch (error) {
+      console.error('대출 목록 조회 중 오류 발생:', error);
+    }
+  };
 
   // 대출 연장 처리 함수
-  const handleExtend = (rent: Rent) => {
-    // TODO: API 연동
-    alert(`"${rent.title}" 도서의 대출이 연장되었습니다.`);
-    setIsModalOpen(false);
+  const handleExtend = async (rent: Rent) => {
+    try {
+      await fetchBookExtend(rent.rentId);
+      alert(`"${rent.title}" 도서의 대출이 연장되었습니다.`);
+      await fetchMyLentsCall();
+    } catch (error) {
+      console.error('대출 연장 중 오류 발생:', error);
+      alert('대출 연장 중 오류가 발생했습니다.');
+    } finally {
+      setIsModalOpen(false);
+    }
+  };
+
+  // 대출 반납 처리 함수
+  const handleReturn = async (rent: Rent) => {
+    try {
+      await fetchBookReturn(rent.rentId);
+      alert(`"${rent.title}" 도서의 대출이 반납되었습니다.`);
+      await fetchMyLentsCall();
+    } catch (error) {
+      console.error('대출 반납 중 오류 발생:', error);
+      alert('대출 반납 중 오류가 발생했습니다.');
+    }
   };
 
   // 반납 예정일까지 남은 일수 계산
@@ -77,98 +113,94 @@ export default function RentTable() {
   };
 
   useEffect(() => {
-    const fetchMyLentsCall = async () => {
-      try {
-        const response = (await fetchMyLents()) as MyLentsResponse[];
-        const formattedRents: Rent[] = response.map((rent) => ({
-          rentId: rent.rentId,
-          title: rent.bookTitle,
-          groupName: rent.userName as GROUPNAME,
-          returnAt: new Date(rent.returnAt),
-          rentalPeriod: 14, // 기본값 설정
-          rentalCount: 0, // 기본값 설정
-          createdAt: new Date(rent.createdAt),
-        }));
-        setRents(formattedRents);
-      } catch (error) {
-        console.error('대출 목록 조회 중 오류 발생:', error);
-      }
-    };
     fetchMyLentsCall();
   }, []);
 
   return (
     <>
-      <div className="rounded-md border bg-white">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>도서명</TableHead>
-              <TableHead>그룹</TableHead>
-              <TableHead>반납 예정일</TableHead>
-              <TableHead>상태</TableHead>
-              <TableHead>연장 횟수</TableHead>
-              <TableHead>대출일</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rents.length > 0 ? (
-              rents.map((rent) => {
-                const status = getReturnStatus(rent.returnAt);
-                return (
-                  <TableRow key={rent.rentId}>
-                    <TableCell className="font-medium">{rent.title}</TableCell>
-                    <TableCell>{rent.groupName}</TableCell>
-                    <TableCell>
-                      {format(rent.returnAt, 'yyyy년 MM월 dd일', {
-                        locale: ko,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={status.color}
-                        className="flex items-center w-fit"
-                      >
-                        {status.text}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{rent.rentalCount}회</TableCell>
-                    <TableCell>
-                      {format(rent.createdAt, 'yyyy년 MM월 dd일', {
-                        locale: ko,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRent(rent);
-                          setIsModalOpen(true);
-                        }}
-                        disabled={
-                          rent.rentalCount >= 2 || status.text === '연체'
-                        }
-                      >
-                        연장
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
+      <div className="rounded-md border bg-white relative">
+        {rents === null ? (
+          <div className="h-[400px] flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-6 text-muted-foreground"
-                >
-                  현재 대출 중인 도서가 없습니다.
-                </TableCell>
+                <TableHead>도서명</TableHead>
+                <TableHead>그룹</TableHead>
+                <TableHead>반납 예정일</TableHead>
+                <TableHead>상태</TableHead>
+                <TableHead>대출일</TableHead>
+                <TableHead></TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {rents.length > 0 ? (
+                rents.map((rent) => {
+                  const status = getReturnStatus(rent.returnAt);
+                  return (
+                    <TableRow key={rent.rentId}>
+                      <TableCell className="font-medium">
+                        {rent.title}
+                      </TableCell>
+                      <TableCell>{rent.groupName}</TableCell>
+                      <TableCell>
+                        {format(rent.returnAt, 'yyyy년 MM월 dd일', {
+                          locale: ko,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={status.color}
+                          className="flex items-center w-fit"
+                        >
+                          {status.text}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {format(rent.createdAt, 'yyyy년 MM월 dd일', {
+                          locale: ko,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedRent(rent);
+                              setIsModalOpen(true);
+                            }}
+                            disabled={status.text === '연체'}
+                          >
+                            연장
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReturn(rent)}
+                          >
+                            반납
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-6 text-muted-foreground"
+                  >
+                    현재 대출 중인 도서가 없습니다.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* 대출 연장 모달 */}
@@ -197,35 +229,19 @@ export default function RentTable() {
                 <div className="col-span-2">
                   {format(
                     new Date(
-                      selectedRent.returnAt.getTime() +
-                        selectedRent.rentalPeriod * 24 * 60 * 60 * 1000
+                      selectedRent.returnAt.getTime() + 7 * 24 * 60 * 60 * 1000
                     ),
                     'yyyy년 MM월 dd일',
                     { locale: ko }
                   )}
                 </div>
-
-                <div className="font-medium">연장 횟수</div>
-                <div className="col-span-2">
-                  {selectedRent.rentalCount} / 2회
-                </div>
               </div>
-
-              {selectedRent.rentalCount >= 2 && (
-                <div className="text-sm text-destructive flex items-center mt-2">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  최대 연장 횟수(2회)를 초과하여 더 이상 연장할 수 없습니다.
-                </div>
-              )}
             </div>
             <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-                취소
+                취소자
               </Button>
-              <Button
-                onClick={() => handleExtend(selectedRent)}
-                disabled={selectedRent.rentalCount >= 2}
-              >
+              <Button onClick={() => handleExtend(selectedRent)}>
                 연장하기
               </Button>
             </DialogFooter>

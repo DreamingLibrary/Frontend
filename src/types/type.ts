@@ -38,7 +38,7 @@ export interface Rent {
   groupName: GROUPNAME;
   returnAt: Date;
   rentalPeriod: number;
-  rentalCount: number; // 연장횟수
+  // rentalCount: number; // 연장횟수
   createdAt: Date;
 }
 

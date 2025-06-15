@@ -32,7 +32,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Edit, User, Phone, Mail, BookMarked, Webhook } from 'lucide-react';
+import {
+  Edit,
+  User,
+  Phone,
+  Mail,
+  BookMarked,
+  Webhook,
+  Loader2,
+} from 'lucide-react';
 import { fetchUserInfo, updatePassword, updateUserInfo } from '@/app/api/apis';
 import { LoginResponse } from '@/types/type';
 
@@ -66,6 +74,7 @@ export default function UserSettings() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [password, setPassword] = useState<string>('');
   const [passwordCheck, setPasswordCheck] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // 폼 설정
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,6 +85,15 @@ export default function UserSettings() {
       email: user.email || '',
     },
   });
+
+  // user 상태가 변경될 때마다 폼 값 업데이트
+  useEffect(() => {
+    form.reset({
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      email: user.email || '',
+    });
+  }, [user, form]);
 
   // 정보 수정 제출 핸들러
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -124,8 +142,15 @@ export default function UserSettings() {
 
   useEffect(() => {
     const getUserInfo = async () => {
-      const response = await fetchUserInfo();
-      setUser(response);
+      try {
+        setIsLoading(true);
+        const response = await fetchUserInfo();
+        setUser(response);
+      } catch (error) {
+        console.error('사용자 정보를 불러오는데 실패했습니다:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     getUserInfo();
   }, []);
@@ -140,56 +165,62 @@ export default function UserSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 이름 */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                이름
-              </div>
-              <div className="font-medium">{user.name}</div>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 이름 */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  이름
+                </div>
+                <div className="font-medium">{user.name}</div>
+              </div>
 
-            {/* 학번 */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center">
-                <BookMarked className="h-4 w-4 mr-2" />
-                학번
+              {/* 학번 */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <BookMarked className="h-4 w-4 mr-2" />
+                  학번
+                </div>
+                <div className="font-medium">{user.studentNumber}</div>
               </div>
-              <div className="font-medium">{user.studentNumber}</div>
-            </div>
 
-            {/* 역할 */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center">
-                <Webhook className="h-4 w-4 mr-2" />
-                역할
+              {/* 역할 */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <Webhook className="h-4 w-4 mr-2" />
+                  역할
+                </div>
+                <div>
+                  <Badge variant={getRoleBadgeVariant(user.role)}>
+                    {getRoleDisplay(user.role)}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <Badge variant={getRoleBadgeVariant(user.role)}>
-                  {getRoleDisplay(user.role)}
-                </Badge>
-              </div>
-            </div>
 
-            {/* 전화번호 */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center">
-                <Phone className="h-4 w-4 mr-2" />
-                전화번호
+              {/* 전화번호 */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <Phone className="h-4 w-4 mr-2" />
+                  전화번호
+                </div>
+                <div className="font-medium">{user.phoneNumber}</div>
               </div>
-              <div className="font-medium">{user.phoneNumber}</div>
-            </div>
 
-            {/* 이메일 */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center">
-                <Mail className="h-4 w-4 mr-2" />
-                이메일
+              {/* 이메일 */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <Mail className="h-4 w-4 mr-2" />
+                  이메일
+                </div>
+                <div className="font-medium">{user.email || '-'}</div>
               </div>
-              <div className="font-medium">{user.email || '-'}</div>
             </div>
-          </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between border-t pt-6">
           <Button

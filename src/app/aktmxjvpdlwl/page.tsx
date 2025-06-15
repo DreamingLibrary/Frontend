@@ -35,9 +35,8 @@ export default function AdminPage() {
   const handleAdminPromotion = async () => {
     try {
       const response = await fetchGroupAdminPromotion(
-        parseInt(adminPromotionGroupId)
-        // TODO: id 넘기기
-        // parseInt(adminPromotionUserId)
+        parseInt(adminPromotionGroupId),
+        parseInt(adminPromotionUserId)
       );
 
       if (response.success) {
